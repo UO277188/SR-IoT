@@ -2,7 +2,7 @@
 class IoT {
     apiKey = "pk.eyJ1IjoidW8yNzcxODgiLCJhIjoiY2xiMHUzbjI4MDBhMTN4b2puYTR1dXlxNSJ9.6-0ol9W73UtV6B8K6gS9Ew";
 
-    url = "";
+    url = "https://uo277188.github.io/SR-IoT/test.json";
     estado = "Error";
 
     // datos para los marcadores
@@ -14,41 +14,41 @@ class IoT {
         ]
     }
 
-    datos = null;
+    datos = "";
+    async getDatosArduino(){
+       return (await fetch(this.url)).json();
+    }
 
-    // obtiene los datos del arduino
-    getDatosArduino(){
-        $.ajax({
-            dataType: "xml",
-            url: this.url,
-            method: 'GET',
-            success: function (datos) {
-                this.datos = JSON.parse(datos);
-                this.estado = "Correcto";
-            },
-            error: function () {
-                this.estado = "Error";
-            }
+    constructor(){
+        this.getDatosArduino().then((datos) => {
+            this.datos = datos;
+            this.estado = "Correcto"
+            console.log(this.datos.temperatura);
+        }).catch((error) => {
+            this.estado = "Error"
         });
     }
 
     // obtiene el popup para un marcador
     getPopupFor(name, lon, lat, temp, hum){
-        let html = '<div class="marker-popup">'+
-            '<p>Lugar: '+name+'</p>'+
-            '<p>Longitud: '+lon+'</p>'+
-            '<p>Latitud: '+lat+'</p>'+
-            '<p>Temperatura: '+temp+'</p>'+
-            '<p>Humedad: '+hum+'</p>'
-        '</div>';
+        let html = 
+            '<div class="marker-popup">'+
+                '<p>Lugar: '+name+'</p>'+
+                '<p>Longitud: '+lon+'</p>'+
+                '<p>Latitud: '+lat+'</p>'+
+                '<p>Temperatura: '+temp+'</p>'+
+                '<p>Humedad: '+hum+'</p>'
+            '</div>';
 
         return new mapboxgl.Popup(
             {
-               anchor: 'bottom',
-               offset: { 'bottom': [0, -10] },
-               closeOnClick: false
+            anchor: 'bottom',
+            offset: { 'bottom': [0, -10] },
+            closeOnClick: true,
+            className: name
             }
-        ).setHTML(html);
+        )
+        .setHTML(html);
     }
 
     // devuelve el estado de los sensores
@@ -64,8 +64,7 @@ class IoT {
     // para los de mentira es aleatorio
     getTemp(nombre){
         if(nombre=="Escuela de Ingeniería Informática")
-            //return this.datos.tem;
-            return "TEST";
+            return this.datos.temperatura;
         else
             return (Math.random() * (16 - 9) + 9).toFixed(2);
     }
@@ -74,8 +73,7 @@ class IoT {
     // para los de mentira es aleatorio
     getHum(nombre){
         if(nombre=="Escuela de Ingeniería Informática")
-            //return this.datos.hum;
-            return "TEST";
+            return this.datos.humedad;
         else
             return (Math.random() * (95 - 70) + 70).toFixed(2);
     }
@@ -96,7 +94,7 @@ class IoT {
             li.appendChild(document.createTextNode(e.nombre+"\t"+" - "+this.getEstado(e.nombre)));
             ul.appendChild(li);
         });
-        
+        this.markersMapBox = mapboxMarkers;
         return mapboxMarkers;
     }
 
@@ -117,6 +115,29 @@ class IoT {
             m.addTo(map);
         });
     }
+
+    // actualiza el popup con los datos nuevos del arduino
+    actualizarPopup(){
+        let html = 
+            '<div class="marker-popup">'+
+                '<p>Lugar: '+this.markers.lugares[0].nombre+'</p>'+
+                '<p>Longitud: '+this.markers.lugares[0].lon+'</p>'+
+                '<p>Latitud: '+this.markers.lugares[0].lat+'</p>'+
+                '<p>Temperatura: '+this.datos.temperatura+'</p>'+
+                '<p>Humedad: '+this.datos.humedad+'</p>'
+            '</div>'+
+            '<button class="mapboxgl-popup-close-button" type="button" aria-label="Close popup" aria-hidden="true">×</button>';
+
+        let popup = document.getElementsByClassName("Escuela de Ingeniería Informática")[0];
+        if(popup!=null){
+            let popupText = popup.getElementsByClassName("marker-popup")[0];
+            popupText.innerHTML = html;
+        }
+    }
 }
 
 var iot = new IoT();
+
+const interval = setInterval(function() {
+    iot.actualizarPopup();
+  }, 2000);
