@@ -141,6 +141,10 @@ class IoT {
             popupText.innerHTML = html;
         }
     }
+
+    TEST(a){
+        console.log(a);
+    }
 }
 
 var iot = new IoT();
