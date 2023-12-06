@@ -15,10 +15,13 @@ class IoT {
     }
 
     datos = "";
+
+    // devuelve los datos en json del arduino
     async getDatosArduino(){
        return (await fetch(this.url)).json();
     }
 
+    // actualiza el estado del sensor de verdad si recibe bien los datos
     constructor(){
         this.getDatosArduino().then((datos) => {
             this.datos = datos;
@@ -37,7 +40,9 @@ class IoT {
                 '<p>Longitud: '+lon+'</p>'+
                 '<p>Latitud: '+lat+'</p>'+
                 '<p>Temperatura: '+temp+'</p>'+
-                '<p>Humedad: '+hum+'</p>'
+                '<p>Humedad: '+hum+'</p>'+
+                '<input type="button" value="Encender">'+
+                '<input type="button" value="Apagar">'+
             '</div>';
 
         return new mapboxgl.Popup(
@@ -123,8 +128,10 @@ class IoT {
                 '<p>Lugar: '+this.markers.lugares[0].nombre+'</p>'+
                 '<p>Longitud: '+this.markers.lugares[0].lon+'</p>'+
                 '<p>Latitud: '+this.markers.lugares[0].lat+'</p>'+
-                '<p>Temperatura: '+this.datos.temperatura+'</p>'+
-                '<p>Humedad: '+this.datos.humedad+'</p>'
+                '<p>Temperatura: '+(this.datos.temperatura+Math.random(10-1)+1.).toFixed(2)+'</p>'+ // CAMBIAR
+                '<p>Humedad: '+this.datos.humedad+'</p>'+
+                '<input type="button" value="Encender" onclick=iot.TEST("encender")>'+              // CAMBIAR
+                '<input type="button" value="Apagar" onclick=iot.TEST("apagar")>'                   // CAMBIAR
             '</div>'+
             '<button class="mapboxgl-popup-close-button" type="button" aria-label="Close popup" aria-hidden="true">×</button>';
 
